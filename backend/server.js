@@ -8,9 +8,12 @@ const errorHandler = require("./middleware/errorHandler");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const corsOptions = require("./config/corsOptions");
+const connectDB = require("./config/dbConfig");
+const mongoose = require("mongoose");
+const router = require("./routes");
 const PORT = process.env.PORT || 3500;
 
-console.log(process.env.NODE_ENV);
+connectDB();
 
 app.use(logger);
 
@@ -21,6 +24,8 @@ app.use(cookieParser());
 app.use("/", express.static(path.join(__dirname, "public")));
 
 app.use("/", require("./routes/root"));
+
+app.use(router);
 
 app.all("*", (req, res) => {
   res.status(404);
@@ -35,7 +40,7 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-// listen for requests
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
